@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.binlicoder.houtai.mapper.ClassMapper">
+    <resultMap id="BaseResultMap" type="com.binlicoder.houtai.entity.Class">
+        <id column="id" property="id"/>
+        <result column="class_name" property="className"/>
+        <result column="class_code" property="classCode"/>
+        <result column="grade" property="grade"/>
+        <result column="major" property="major"/>
+        <result column="head_teacher_id" property="headTeacherId"/>
+        <result column="head_teacher_name" property="headTeacherName"/>
+        <result column="class_size" property="classSize"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <select id="findAll" resultMap="BaseResultMap">
+        SELECT c.*, u.real_name as head_teacher_name
+        FROM classes c
+        LEFT JOIN users u ON c.head_teacher_id = u.id
+        <where>
+            <if test="classCode != null and classCode != ''">
+                AND c.class_code LIKE CONCAT('%', #{classCode}, '%')
+            </if>
+            <if test="className != null and className != ''">
+                AND c.class_name LIKE CONCAT('%', #{className}, '%')
+            </if>
+        </where>
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*)
+        FROM classes c
+        <where>
+            <if test="classCode != null and classCode != ''">
+                AND c.class_code LIKE CONCAT('%', #{classCode}, '%')
+            </if>
+            <if test="className != null and className != ''">
+                AND c.class_name LIKE CONCAT('%', #{className}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="findById" resultMap="BaseResultMap">
+        SELECT c.*, u.real_name as head_teacher_name
+        FROM classes c
+        LEFT JOIN users u ON c.head_teacher_id = u.id
+        WHERE c.id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.binlicoder.houtai.entity.Class" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO classes (class_name, class_code, grade, major, head_teacher_id, class_size)
+        VALUES (#{className}, #{classCode}, #{grade}, #{major}, #{headTeacherId}, #{classSize})
+    </insert>
+
+    <update id="update" parameterType="com.binlicoder.houtai.entity.Class">
+        UPDATE classes
+        <set>
+            <if test="className != null">class_name = #{className},</if>
+            <if test="grade != null">grade = #{grade},</if>
+            <if test="major != null">major = #{major},</if>
+            <if test="headTeacherId != null">head_teacher_id = #{headTeacherId},</if>
+            <if test="classSize != null">class_size = #{classSize},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM classes WHERE id = #{id}
+    </delete>
+</mapper>
