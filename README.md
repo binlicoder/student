@@ -1,121 +1,62 @@
-# 学生信息管理系统 (Student Information Management System)
+# 学生管理系统：本地微服务项目
 
-这是一个现代化的学生信息管理系统，包含完整的前端和后端实现。本项目提供了一个基于 **Vue 3** 的前端界面，并提供了两种后端实现供选择：**Spring Boot** (Java) 或 **Node.js** (Express)。
+后端使用 Java 17+、Spring Boot 3.3.5、MyBatis、MySQL 8，前端继续使用 Vue 3。无需 Docker 或 Nginx。
 
-## ✨ 主要功能
+| 模块 | 端口 | 职责 |
+| --- | --- | --- |
+| gateway-service | 8080 | 统一入口，按路径转发请求、Authorization、查询参数和响应状态 |
+| identity-service | 8081 | 登录、用户信息、学生、教师及关联账号 |
+| academic-service | 8082 | 班级、课程、选课、成绩 |
+| reporting-service | 8083 | 通过 HTTP 聚合两个业务服务的统计，不直接访问数据库 |
+| service-common | 无 | 统一响应、实体、JWT、Web 配置 |
 
-系统包含以下核心模块：
-- **用户认证**：登录、注销、JWT Token 认证。
-- **学生管理**：学生信息的增删改查。
-- **教师管理**：教师信息的增删改查。
-- **班级管理**：班级信息的管理。
-- **课程管理**：课程信息的维护。
-- **成绩管理**：学生成绩录入与查询。
-- **选课管理**：学生选课及退课功能。
+## 本地启动
 
-## 🛠 技术栈
+1. 安装 JDK 17+、Maven 3.9+、MySQL 8 和 Node.js。
+2. 在本地 MySQL 执行 `springboot-houtai/init.sql`。脚本创建数据库和演示数据，不会迁移已有远程库。
+3. 在项目根目录复制 `.env.example` 为 `.env`，配置数据库账号、密码及至少 32 字节的 JWT_SECRET。启动脚本会读取该文件，IDE 运行时请自行配置对应环境变量。
+4. 执行：
 
-### 前端 (`vue-admin`)
-- **框架**: Vue 3
-- **构建工具**: Vite
-- **UI 组件库**: Element Plus
-- **路由**: Vue Router 4
-- **HTTP 客户端**: Axios
-
-### 后端选项 1 (`springboot-houtai`)
-- **框架**: Spring Boot
-- **ORM**: MyBatis
-- **数据库**: MySQL
-- **工具**: Lombok, Maven
-
-### 后端选项 2 (`vue-admin/backend`)
-- **框架**: Express.js (Node.js)
-- **数据库**: MySQL
-- **认证**: JWT
-
----
-
-## 🚀 快速开始
-
-### 1. 环境准备
-- Node.js (v16+)
-- JDK 17+ (如果使用 Java 后端)
-- MySQL 8.0+
-
-### 2. 数据库配置
-请根据你选择的后端，执行相应的 SQL 初始化脚本。
-
-- **如果你选择 Spring Boot 后端**:
-  使用 MySQL 客户端执行 `springboot-houtai/init.sql` 脚本。
-
-- **如果你选择 Node.js 后端**:
-  使用 MySQL 客户端执行 `vue-admin/database.sql` 脚本。
-
-### 3. 后端启动 (二选一)
-
-#### 选项 A: 启动 Spring Boot 后端 (推荐)
-1. 进入目录：`cd springboot-houtai`
-2. 修改配置：在 `src/main/resources/application.properties` 中配置你的数据库用户名和密码。
-3. 运行项目：
-   ```bash
-   ./mvnw spring-boot:run
-   ```
-   后端将在 `http://localhost:8080` 启动。
-
-#### 选项 B: 启动 Node.js 后端
-1. 进入目录：`cd vue-admin/backend`
-2. 安装依赖：`npm install`
-3. 修改配置：在 `.env` 文件中配置你的数据库连接信息。
-4. 运行项目：
-   ```bash
-   npm start
-   ```
-   后端将在 `http://localhost:3000` 启动。
-
-   **注意**：如果你使用 Node.js 后端，需要修改前端配置。打开 `vue-admin/src/utils/request.js`，将 `baseURL` 修改为：
-   ```javascript
-   baseURL: 'http://localhost:3000/api',
-   ```
-
-### 4. 前端启动
-1. 进入前端目录：`cd vue-admin`
-2. 安装依赖：
-   ```bash
-   npm install
-   ```
-3. 启动开发服务器：
-   ```bash
-   npm run dev
-   ```
-4. 访问地址：`http://localhost:5173`
-
----
-
-## 👤 默认账号
-
-系统预置了以下测试账号：
-
-| 角色 | 用户名 | 密码 | 权限说明 |
-|------|--------|------|----------|
-| 管理员 | admin | admin123 | 拥有所有权限 |
-| 教师 | teacher1 | admin123 | 仅限教师相关操作 |
-| 学生 | student1 | admin123 | 仅限学生相关操作 |
-
-## 📂 目录结构说明
-
-```
-.
-├── springboot-houtai/     # Java Spring Boot 后端源码
-│   ├── src/
-│   ├── init.sql           # Java版数据库脚本
-│   └── pom.xml
-├── vue-admin/             # Vue3 前端源码
-│   ├── backend/           # Node.js Express 后端源码
-│   ├── src/
-│   ├── database.sql       # Node版数据库脚本
-│   └── package.json
-└── README.md              # 项目说明文档
+```powershell
+./scripts/start-services.ps1
 ```
 
-## 📄 许可证
-MIT License
+脚本先执行 Maven verify，再后台启动四个 Java 进程并等待健康检查。日志保存在 `.local-services/`。已构建时可使用 `-SkipBuild`。
+
+5. 启动前端：
+
+```powershell
+cd vue-admin
+npm install
+npm run dev
+```
+
+前端默认连接 `http://localhost:8080/api`，无需修改已有业务 API。停止后端使用 `./scripts/stop-services.ps1`。
+
+## IDE 与手工运行
+
+将 `springboot-houtai/pom.xml` 作为 Maven 多模块项目导入 IDE，分别运行四个 `*Application`。业务服务需要相同的 `JWT_SECRET`、`DB_URL`、`DB_USERNAME`、`DB_PASSWORD`。默认连接本地 `student_management_system` 库。
+
+```powershell
+mvn -f springboot-houtai/pom.xml verify
+java -jar springboot-houtai/identity-service/target/identity-service-0.0.1-SNAPSHOT.jar
+# 其他三个服务在独立终端中运行相应 JAR
+```
+
+可通过 IDENTITY_SERVICE_URL、ACADEMIC_SERVICE_URL、REPORTING_SERVICE_URL 配置服务地址；通过各进程的 SERVER_PORT 修改端口。自定义端口时应同步修改启动脚本的端口检查与健康检查。
+
+## 接口与检查
+
+- `/api/auth/**`、`/api/students/**`、`/api/teachers/**` → 人员服务。
+- `/api/classes/**`、`/api/courses/**`、`/api/grades/**`、`/api/course-selections/**` → 教务服务。
+- `/api/stats` → 统计服务，保持原有四项统计字段；依赖失败返回 HTTP 503。
+- 网关 `/health` 检查网关进程；各服务 `/actuator/health` 检查自身健康（业务服务包含数据库检查）。
+- 业务服务各自校验 JWT，网关不替代业务鉴权。跨域配置由业务服务返回。
+
+## 当前边界
+
+这是可以独立构建、运行的服务拆分版本，数据库暂时共享。现有 SQL 包含跨领域 JOIN 和外键级联，学生/教师操作仍会维护账号，因此将其放在同一服务；未引入跨服务事务。完全独立数据库还需改造关联查询、外键和数据同步策略。
+
+统计服务保留原有公开统计行为。系统原有的明文密码和角色权限实现仍需在正式上线前单独改造。Node 后端 `vue-admin/backend` 保留作为旧实现，不参与当前微服务启动。
+
+演示账号：`admin`、`teacher1`、`student1`，密码均为 `admin123`。
